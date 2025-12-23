@@ -1,0 +1,990 @@
+
+<!DOCTYPE html>
+<!-- saved from url=(0063)https://pauluk.github.io/Bring-Your-Own-LLM-RISEN-POC-HTML-SPA/ -->
+<html lang="en-GB"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RISEN 10–80–10 – Practical AI Framework</title>
+  <script src="./Bring Your Own LLM – Modal AI POC_files/saved_resource"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/v4-shims.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link href="./Bring Your Own LLM – Modal AI POC_files/css2" rel="stylesheet">
+  <style>
+    :root {
+      --font-primary: 'Inter', sans-serif;
+
+      /* Light theme */
+      --bg-primary: #f0f4f9;   /* page background */
+      --bg-secondary: #003087; /* slide canvas background (dark blue) */
+      --bg-accent: #f8fafc;    /* card/panel background on slides (light) */
+
+      --text-primary: #e2e8f0;   /* default light text for dark slide */
+      --text-secondary: #cbd5e1; /* softer light text for dark slide */
+
+      --accent-color: #4299e1;
+      --highlight-color: #00A499;
+    }
+    html.dark {
+      --bg-primary: #1a202c;
+      --bg-secondary: #2d3748;  /* dark slide background */
+      --bg-accent: #273041;     /* dark card/panel */
+      --text-primary: #e2e8f0;
+      --text-secondary: #a0aec0;
+      --accent-color: #4299e1;
+      --highlight-color: #4fd1c5;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background-color: var(--bg-primary);
+      color: var(--text-secondary);
+    }
+
+    /* Slides */
+    .slide {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.4s ease-in-out;
+    }
+    .slide.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Text defaults on slide background */
+    .slide { color: var(--text-primary); }
+    .slide p, .slide li, .slide span, .slide small { color: var(--text-secondary); }
+    .slide h1, .slide h2, .slide h3, .slide h4, .slide h5, .slide h6 { color: #fff; }
+
+    /* Light surfaces */
+    html:not(.dark) .bg-accent,
+    html:not(.dark) .bg-white,
+    html:not(.dark) .surface-light {
+      color: #1f2937; /* slate-800 */
+    }
+    html:not(.dark) .bg-accent p,
+    html:not(.dark) .bg-accent li,
+    html:not(.dark) .bg-accent span,
+    html:not(.dark) .bg-accent small,
+    html:not(.dark) .bg-white p,
+    html:not(.dark) .bg-white li,
+    html:not(.dark) .bg-white span,
+    html:not(.dark) .bg-white small,
+    html:not(.dark) .surface-light p,
+    html:not(.dark) .surface-light li,
+    html:not(.dark) .surface-light span,
+    html:not(.dark) .surface-light small {
+      color: #475569; /* slate-600 */
+    }
+    html:not(.dark) .bg-accent h1,
+    html:not(.dark) .bg-accent h2,
+    html:not(.dark) .bg-accent h3,
+    html:not(.dark) .bg-accent h4,
+    html:not(.dark) .bg-accent h5,
+    html:not(.dark) .bg-accent h6,
+    html:not(.dark) .bg-white h1,
+    html:not(.dark) .bg-white h2,
+    html:not(.dark) .bg-white h3,
+    html:not(.dark) .bg-white h4,
+    html:not(.dark) .bg-white h5,
+    html:not(.dark) .bg-white h6,
+    html:not(.dark) .surface-light h1,
+    html:not(.dark) .surface-light h2,
+    html:not(.dark) .surface-light h3,
+    html:not(.dark) .surface-light h4,
+    html:not(.dark) .surface-light h5,
+    html:not(.dark) .surface-light h6 {
+      color: #1f2937; /* slate-800 */
+    }
+
+    .bg-secondary { background-color: var(--bg-secondary); }
+    .bg-accent { background-color: var(--bg-accent); }
+    .accent-text { color: var(--accent-color); }
+    .highlight-text { color: var(--highlight-color); }
+    .bg-accent-color { background-color: var(--accent-color); }
+
+    /* Simple reveal animation */
+    .slide-content > * {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: reveal 0.5s ease-out forwards;
+    }
+    .slide.active .slide-content > *:nth-child(1) { animation-delay: 0.08s; }
+    .slide.active .slide-content > *:nth-child(2) { animation-delay: 0.16s; }
+    .slide.active .slide-content > *:nth-child(3) { animation-delay: 0.24s; }
+    .slide.active .slide-content > *:nth-child(4) { animation-delay: 0.32s; }
+    @keyframes reveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Iframe demo */
+    .iframe-wrapper {
+      position: relative;
+      width: 95%;
+      margin: 0 auto;
+      aspect-ratio: 3 / 2;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      background: #111;
+    }
+    .iframe-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+    .iframe-open-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 5;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      backdrop-filter: blur(6px);
+    }
+    .iframe-open-btn span.icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    /* Gallery */
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      width: 90%;
+      margin: 1rem auto 0;
+    }
+    .thumb {
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: #111;
+    }
+    .thumb img {
+      width: 100%;
+      display: block;
+    }
+    .thumb:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 25px rgba(0,0,0,0.3);
+    }
+    .thumb-label {
+      position: absolute;
+      left: 0.75rem;
+      bottom: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+    }
+
+    /* Lightbox */
+    #lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    #lightbox-overlay.active {
+      display: flex;
+    }
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .lightbox-image-wrapper img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption {
+      color: #f5f5f5;
+      font-size: 0.9rem;
+      text-align: center;
+      max-width: 80vw;
+    }
+    .lightbox-prev,
+    .lightbox-next,
+    .lightbox-close {
+      position: absolute;
+      border: none;
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+      cursor: pointer;
+      border-radius: 999px;
+      width: 40px;
+      height: 40px;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox-prev {
+      left: -52px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .lightbox-next {
+      right: -52px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .lightbox-close {
+      top: -52px;
+      right: 0;
+      font-size: 1.6rem;
+    }
+    @media (max-width: 768px) {
+      .lightbox-prev { left: 4px; }
+      .lightbox-next { right: 4px; }
+      .lightbox-close { top: -44px; right: 4px; }
+    }
+  </style>
+  <script>
+    // Theme initialisation to avoid flash
+    if (
+      localStorage.getItem('theme') === 'dark' ||
+      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.relative{position:relative}.col-span-1{grid-column:span 1 / span 1}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-2{margin-left:0.5rem}.ml-4{margin-left:1rem}.mr-1{margin-right:0.25rem}.mr-2{margin-right:0.5rem}.mr-3{margin-right:0.75rem}.mr-4{margin-right:1rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.aspect-video{aspect-ratio:16 / 9}.h-24{height:6rem}.h-28{height:7rem}.h-full{height:100%}.h-screen{height:100vh}.w-12{width:3rem}.w-6{width:1.5rem}.w-7{width:1.75rem}.w-full{width:100%}.max-w-3xl{max-width:48rem}.max-w-4xl{max-width:56rem}.max-w-5xl{max-width:64rem}.max-w-6xl{max-width:72rem}.max-w-xl{max-width:36rem}.flex-grow{flex-grow:1}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.whitespace-pre{white-space:pre}.whitespace-pre-wrap{white-space:pre-wrap}.rounded{border-radius:0.25rem}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.border-t{border-top-width:1px}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/70{background-color:rgb(255 255 255 / 0.7)}.object-cover{object-fit:cover}.p-10{padding:2.5rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}.text-\[0\.65rem\]{font-size:0.65rem}.text-\[0\.70rem\]{font-size:0.70rem}.text-\[0\.7rem\]{font-size:0.7rem}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-semibold{font-weight:600}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.leading-tight{line-height:1.25}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.opacity-90{opacity:0.9}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-\[1\.02\]:hover{--tw-scale-x:1.02;--tw-scale-y:1.02;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-\[1\.03\]:hover{--tw-scale-x:1.03;--tw-scale-y:1.03;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-gray-300:hover{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:text-black:hover{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.hover\:opacity-80:hover{opacity:0.8}.hover\:shadow-md:hover{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.hover\:shadow-xl:hover{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.disabled\:opacity-50:disabled{opacity:0.5}@media (min-width: 640px){.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}@media (min-width: 768px){.md\:col-span-2{grid-column:span 2 / span 2}.md\:h-32{height:8rem}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:p-10{padding:2.5rem}.md\:p-12{padding:3rem}.md\:text-2xl{font-size:1.5rem;line-height:2rem}.md\:text-3xl{font-size:1.875rem;line-height:2.25rem}.md\:text-4xl{font-size:2.25rem;line-height:2.5rem}.md\:text-5xl{font-size:3rem;line-height:1}.md\:text-6xl{font-size:3.75rem;line-height:1}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-lg{font-size:1.125rem;line-height:1.75rem}.md\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 1024px){.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}}@media (prefers-color-scheme: dark){.dark\:block{display:block}.dark\:hidden{display:none}.dark\:border-gray-700{--tw-border-opacity:1;border-color:rgb(55 65 81 / var(--tw-border-opacity, 1))}.dark\:bg-gray-600{--tw-bg-opacity:1;background-color:rgb(75 85 99 / var(--tw-bg-opacity, 1))}.dark\:bg-gray-700{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.dark\:bg-gray-800{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.dark\:bg-gray-800\/50{background-color:rgb(31 41 55 / 0.5)}.dark\:text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.dark\:hover\:bg-gray-600:hover{--tw-bg-opacity:1;background-color:rgb(75 85 99 / var(--tw-bg-opacity, 1))}.dark\:hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}}</style></head>
+<body class="flex flex-col h-screen">
+
+  <main id="presentation-container" class="flex-grow overflow-hidden theme-transition">
+
+    <!-- Slide 1: Title -->
+    <section class="slide w-full h-full bg-secondary active">
+      <div class="w-full h-full flex flex-col justify-center items-center text-center p-8 slide-content">
+        <i class="fa-solid fa-compass text-6xl mb-6 accent-text"></i>
+        <h1 class="text-5xl md:text-6xl font-extrabold leading-tight">
+          RISEN (10–80–10)
+        </h1>
+        <p class="mt-4 text-2xl opacity-90 max-w-4xl">
+          A practical framework for using AI at work — safer, repeatable, and human-led outcomes.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 2: The problem -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-10 md:p-12 slide-content">
+        <i class="fa-solid fa-triangle-exclamation text-5xl accent-text mb-6"></i>
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-8 text-center">
+          Why AI Often Fails in Real Work
+        </h2>
+        <ul class="space-y-5 text-lg md:text-2xl text-left max-w-5xl">
+          <li class="flex items-start">
+            <i class="fa-solid fa-wand-magic-sparkles w-7 accent-text mt-1"></i>
+            <span class="ml-4">Outputs look impressive but aren’t usable in a process or workflow.</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fa-solid fa-shuffle w-7 accent-text mt-1"></i>
+            <span class="ml-4">Results vary between users — hard to repeat, hard to standardise.</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fa-solid fa-clipboard-list w-7 accent-text mt-1"></i>
+            <span class="ml-4">No clear audit trail: what was asked, what assumptions were made, what changed.</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fa-solid fa-scale-balanced w-7 accent-text mt-1"></i>
+            <span class="ml-4">Too much trust placed in “the answer” instead of judgement and evidence.</span>
+          </li>
+        </ul>
+        <p class="mt-8 text-lg md:text-xl text-center max-w-4xl">
+          The issue isn’t AI capability — it’s <strong>how we ask</strong> and <strong>how we apply</strong>.
+        </p>
+      </div>
+    </section>
+
+    
+
+    <!-- Slide 3: Context (Live Example) -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 text-center">
+          Context: RISEN 10–80–10 (Live Example)
+        </h2>
+        <p class="text-lg mb-6 text-center max-w-4xl">
+          This is the supporting context page that demonstrates the framework in a working, shareable format.
+          Use it during delivery, onboarding, or as a reference link in documentation.
+        </p>
+
+        <div class="iframe-wrapper">
+          <a href="https://risen-10-80-10-438135816942.us-west1.run.app/" target="_blank" rel="noopener" class="iframe-open-btn">
+            <span class="icon">⧉</span>
+            <span>Open in new tab</span>
+          </a>
+          <iframe src="https://risen-10-80-10-438135816942.us-west1.run.app/" title="RISEN 10–80–10 Context Page" loading="lazy"></iframe>
+        </div>
+
+        <p class="mt-4 text-xs md:text-sm text-center max-w-4xl">
+          Tip: in a “Bring Your Own LLM” setup, you can keep prompts + examples here, and paste outputs back into tools or documents.
+        </p>
+      </div>
+    </section>
+
+<!-- Slide 3: What is RISEN -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-10 md:p-12 slide-content">
+        <i class="fa-solid fa-diagram-project text-5xl accent-text mb-6"></i>
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          What is RISEN?
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          RISEN is a structured prompt framework that forces clarity <strong>before</strong> generation.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2"><span class="accent-text">R</span> — Role</h3>
+            <p class="text-sm md:text-base">Tell the AI who it is (expertise, perspective, domain).</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2"><span class="accent-text">I</span> — Instructions</h3>
+            <p class="text-sm md:text-base">Define the task and what “done” looks like.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2"><span class="accent-text">S</span> — Steps</h3>
+            <p class="text-sm md:text-base">Provide the logic: sequence, decisions, transformations.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2"><span class="accent-text">E</span> — Example / End Goal</h3>
+            <p class="text-sm md:text-base">Show the shape of success (structure, style, output pattern).</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light md:col-span-2">
+            <h3 class="text-xl font-bold mb-2"><span class="accent-text">N</span> — Narrowing</h3>
+            <p class="text-sm md:text-base">
+              Add guard rails: format (JSON/table/email), length, language, exclusions, tone, risk boundaries.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: 10-80-10 -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 text-center">
+          The 10–80–10 Model
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-10">
+          Put human effort where it matters: design the thinking, let AI execute, then apply judgement.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="flex items-start text-left">
+            <div class="text-5xl font-extrabold accent-text mr-4">10%</div>
+            <div>
+              <h3 class="text-2xl font-semibold text-white">Setup</h3>
+              <p class="mt-2 text-sm md:text-base">Define Role, Instructions, Steps, Example, and Narrowing.</p>
+            </div>
+          </div>
+          <div class="flex items-start text-left">
+            <div class="text-5xl font-extrabold accent-text mr-4">80%</div>
+            <div>
+              <h3 class="text-2xl font-semibold text-white">Execution</h3>
+              <p class="mt-2 text-sm md:text-base">AI does the drafting, structuring, and heavy lifting.</p>
+            </div>
+          </div>
+          <div class="flex items-start text-left">
+            <div class="text-5xl font-extrabold accent-text mr-4">10%</div>
+            <div>
+              <h3 class="text-2xl font-semibold text-white">Review</h3>
+              <p class="mt-2 text-sm md:text-base">Human judgement: validate, correct, and decide what to keep.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-10 bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light max-w-5xl">
+          <p class="text-sm md:text-base leading-relaxed">
+            <strong>Shift:</strong> less typing and trial-and-error, more intent and reuse. The output becomes a repeatable artefact,
+            not a one-off answer.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 5: Role -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-10 md:p-12 slide-content">
+        <i class="fa-solid fa-user-tie text-5xl accent-text mb-6"></i>
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          The First 10%: Role
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          Tell the AI who it is — expertise, viewpoint, and boundaries.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-semibold mb-2 flex items-center">
+              <i class="fa-solid fa-briefcase accent-text mr-2"></i> Examples
+            </h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>“You are a Senior Business Analyst working in UK public services.”</li>
+              <li>“You are a Finance Operations SME for accounts receivable and payments.”</li>
+              <li>“You are an NHS policy writer focused on clarity and compliance.”</li>
+            </ul>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-semibold mb-2 flex items-center">
+              <i class="fa-solid fa-bullseye accent-text mr-2"></i> Why it matters
+            </h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Sets assumptions (UK context, service constraints, terminology).</li>
+              <li>Aligns tone (formal, plain English, instructional, empathetic).</li>
+              <li>Improves consistency between different users and teams.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 6: Instructions & Steps -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-10 md:p-12 slide-content">
+        <i class="fa-solid fa-list-ol text-5xl accent-text mb-6"></i>
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          The Core 80%: Instructions & Steps
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          Define the task and provide the logic. This is where most quality comes from.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">Instructions</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>What to produce (checklist, email, risks, requirements, summary).</li>
+              <li>Audience (new starter, manager, supplier, public).</li>
+              <li>Success criteria (“usable in an SOP”, “actionable”, “no jargon”).</li>
+            </ul>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">Steps</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Ordered sequence (extract → normalise → generate → validate).</li>
+              <li>Decision points (if/else, thresholds, exceptions).</li>
+              <li>Transformations (turn text into JSON, process map, table).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 7: Example & Narrowing -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-10 md:p-12 slide-content">
+        <i class="fa-solid fa-shield-halved text-5xl accent-text mb-6"></i>
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          Guard Rails: Example & Narrowing
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          Constraints don’t reduce quality — they increase it.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">Example / End Goal</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Shows the structure you want (headings, fields, sections).</li>
+              <li>Reduces ambiguity and “creative wandering”.</li>
+              <li>Helps teams produce consistent artefacts.</li>
+            </ul>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">Narrowing</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Output format: <strong>JSON only</strong>, table, email, bullets.</li>
+              <li>Style: UK English, plain language, no legal advice, no hype.</li>
+              <li>Limits: word count, sections, “do not include” exclusions.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 8: Human review -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-10 md:p-12 slide-content">
+        <i class="fa-solid fa-check-double text-5xl accent-text mb-6"></i>
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          The Final 10%: Human Review
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          AI accelerates. Humans decide.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">Review checklist</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Sense-check facts and policy alignment.</li>
+              <li>Validate assumptions and edge cases.</li>
+              <li>Remove anything risky, vague, or unverified.</li>
+            </ul>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">Decision</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Keep what’s useful and evidence-backed.</li>
+              <li>Rewrite the bits that need nuance.</li>
+              <li>Decide what <strong>not</strong> to use.</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="mt-8 text-lg md:text-xl text-center max-w-4xl">
+          Treat AI as an assistant, not an authority.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 9: Before/After example -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          RISEN in Practice
+        </h2>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-3 flex items-center">
+              <i class="fa-solid fa-comment-dots accent-text mr-2"></i> Without RISEN
+            </h3>
+            <p class="text-sm md:text-base mb-2"><strong>Prompt:</strong> “Write me a checklist for payroll.”</p>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Generic, inconsistent, missing controls.</li>
+              <li>Hard to reuse or audit.</li>
+              <li>Often unclear what assumptions were made.</li>
+            </ul>
+          </div>
+
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-3 flex items-center">
+              <i class="fa-solid fa-sparkles accent-text mr-2"></i> With RISEN
+            </h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li><strong>Role:</strong> Payroll Ops Lead (UK).</li>
+              <li><strong>Instructions:</strong> Compliance checklist for end-to-end payroll run.</li>
+              <li><strong>Steps:</strong> Validate → Process → Reconcile → Sign-off.</li>
+              <li><strong>Example:</strong> NHS-style stage checklist.</li>
+              <li><strong>Narrowing:</strong> JSON only, UK terminology.</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="mt-8 text-lg md:text-xl text-center max-w-5xl">
+          Outcome: reusable, shareable, and safer — ready for tools and automation.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 10: Where it works -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          Where RISEN Delivers the Most Value
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          Especially useful in teams where accuracy, consistency, and risk matter.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-coins accent-text mr-2"></i>Finance</h3>
+            <p class="text-sm">Payments, reconciliations, controls, evidence-led checklists.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-people-group accent-text mr-2"></i>HR &amp; Payroll</h3>
+            <p class="text-sm">Standard outputs, clear steps, compliance boundaries.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-scale-balanced accent-text mr-2"></i>Policy &amp; Legal</h3>
+            <p class="text-sm">Controlled drafting with constraints and traceability.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-hospital accent-text mr-2"></i>Health &amp; Care</h3>
+            <p class="text-sm">Plain-English guidance, repeatability, safety checks.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-building-columns accent-text mr-2"></i>Public Services</h3>
+            <p class="text-sm">Consistent outputs across teams and services.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-laptop-code accent-text mr-2"></i>Digital &amp; Delivery</h3>
+            <p class="text-sm">Requirements, user journeys, acceptance criteria, SOP tooling.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 11: BYO-LLM pattern -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          RISEN + “Bring Your Own LLM”
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          A low-risk operating model: control the structure, not the vendor.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="flex items-start p-6 bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg surface-light">
+            <i class="fa-solid fa-shield-alt text-3xl accent-text w-12 text-center"></i>
+            <div class="ml-4 text-left">
+              <h3 class="text-xl font-bold mb-1">Security &amp; Procurement Friendly</h3>
+              <p class="text-sm md:text-base leading-relaxed">
+                Tools don’t need LLM API keys. Users run prompts in their approved LLM accounts.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start p-6 bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg surface-light">
+            <i class="fa-solid fa-plug text-3xl accent-text w-12 text-center"></i>
+            <div class="ml-4 text-left">
+              <h3 class="text-xl font-bold mb-1">Vendor Neutral</h3>
+              <p class="text-sm md:text-base leading-relaxed">
+                The “contract” is the schema (JSON/table), not the model. Swap providers without redesign.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start p-6 bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg surface-light">
+            <i class="fa-solid fa-layer-group text-3xl accent-text w-12 text-center"></i>
+            <div class="ml-4 text-left">
+              <h3 class="text-xl font-bold mb-1">Reusable Assets</h3>
+              <p class="text-sm md:text-base leading-relaxed">
+                RISEN prompts and examples become shared team assets: versioned, reviewed, improved.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start p-6 bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg surface-light">
+            <i class="fa-solid fa-road text-3xl accent-text w-12 text-center"></i>
+            <div class="ml-4 text-left">
+              <h3 class="text-xl font-bold mb-1">Path to Production</h3>
+              <p class="text-sm md:text-base leading-relaxed">
+                Once the shape is trusted, replace copy/paste with workflows (Power Automate, n8n, APIs).
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 12: From prompts to products -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          From Prompts to Products
+        </h2>
+        <p class="text-lg md:text-2xl text-center max-w-5xl mb-8">
+          RISEN scales beyond chat into real tools.
+        </p>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-clipboard-check accent-text mr-2"></i>Checklists</h3>
+            <p class="text-sm">Execution support with evidence capture and sign-off.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-sitemap accent-text mr-2"></i>Process Maps</h3>
+            <p class="text-sm">Mermaid / PlantUML from SOPs and workflow descriptions.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-table accent-text mr-2"></i>Structured Data</h3>
+            <p class="text-sm">Turn messy text into JSON/CSV ready for reporting.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-graduation-cap accent-text mr-2"></i>Training</h3>
+            <p class="text-sm">Quizzes, flashcards, onboarding guides from SOPs.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-pen-ruler accent-text mr-2"></i>Requirements</h3>
+            <p class="text-sm">User stories, acceptance criteria, MoSCoW, controls.</p>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-lg font-bold mb-1"><i class="fa-solid fa-gears accent-text mr-2"></i>Automation</h3>
+            <p class="text-sm">Trigger workflows and approvals using predictable outputs.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 13: What good looks like -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          What “Good” Looks Like
+        </h2>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">A good RISEN prompt…</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Can be reused by someone else without extra explanation.</li>
+              <li>Produces similar outputs across different users and models.</li>
+              <li>Captures assumptions and constraints clearly.</li>
+              <li>Creates artefacts that fit a workflow (not just “nice text”).</li>
+            </ul>
+          </div>
+          <div class="bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light">
+            <h3 class="text-xl font-bold mb-2">A good output…</h3>
+            <ul class="list-disc list-inside space-y-2 text-sm md:text-base">
+              <li>Is structured (JSON/table) and easy to check.</li>
+              <li>Is actionable (clear steps, decisions, ownership).</li>
+              <li>Has obvious gaps flagged, not hidden.</li>
+              <li>Is safe to share internally without rework.</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="mt-8 text-lg md:text-xl text-center max-w-5xl">
+          If it can’t be reused, it’s not a framework yet — it’s just a one-off.
+        </p>
+      </div>
+    </section>
+
+    <!-- Slide 14: Getting started -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center p-8 md:p-12 slide-content">
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 text-center">
+          Getting Started (Today)
+        </h2>
+
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="flex items-start text-left">
+            <div class="text-5xl font-extrabold accent-text mr-4">1</div>
+            <div>
+              <h3 class="text-xl font-semibold text-white">Pick one real task</h3>
+              <p class="mt-2 text-sm md:text-base">Something you genuinely do at work, not a demo.</p>
+            </div>
+          </div>
+          <div class="flex items-start text-left">
+            <div class="text-5xl font-extrabold accent-text mr-4">2</div>
+            <div>
+              <h3 class="text-xl font-semibold text-white">Write the RISEN prompt</h3>
+              <p class="mt-2 text-sm md:text-base">Spend 10 minutes on structure before asking.</p>
+            </div>
+          </div>
+          <div class="flex items-start text-left">
+            <div class="text-5xl font-extrabold accent-text mr-4">3</div>
+            <div>
+              <h3 class="text-xl font-semibold text-white">Let AI execute</h3>
+              <p class="mt-2 text-sm md:text-base">Generate the draft, structure, or schema.</p>
+            </div>
+          </div>
+          <div class="flex items-start text-left">
+            <div class="text-5xl font-extrabold accent-text mr-4">4</div>
+            <div>
+              <h3 class="text-xl font-semibold text-white">Review and reuse</h3>
+              <p class="mt-2 text-sm md:text-base">Improve once, then share as a team asset.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-10 bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light max-w-5xl">
+          <p class="text-sm md:text-base leading-relaxed">
+            Tip: keep prompts in a shared library (SharePoint/Wiki), with examples and “known good” outputs.
+            That’s how you scale safely.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 15: Closing -->
+    <section class="slide w-full h-full bg-secondary">
+      <div class="w-full h-full flex flex-col justify-center items-center text-center p-8 md:p-12 slide-content">
+        <i class="fa-solid fa-lightbulb text-6xl mb-6 accent-text"></i>
+        <h2 class="text-4xl md:text-5xl font-bold text-white mb-4">
+          Closing Thought
+        </h2>
+        <p class="text-lg md:text-2xl max-w-5xl">
+          AI doesn’t replace thinking — it rewards those who structure it well.
+        </p>
+
+        <div class="mt-10 bg-accent dark:bg-gray-800/50 rounded-lg shadow-lg p-6 surface-light max-w-4xl">
+          <p class="text-sm md:text-base leading-relaxed">
+            <strong>RISEN (10–80–10)</strong> is a simple habit: design the ask, let AI do the work, then apply judgement.
+            Repeat, refine, and share.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer/navigation -->
+  <footer class="flex items-center justify-between w-full p-4 bg-white border-t border-gray-200 theme-transition dark:bg-gray-800 dark:border-gray-700">
+    <button id="prevBtn" class="bg-accent-color text-white font-bold py-2 px-6 rounded-md shadow-sm hover:opacity-80 transition-opacity disabled:opacity-50" disabled="">
+      <i class="fa-solid fa-arrow-left mr-2"></i> Prev
+    </button>
+    <div class="flex items-center gap-4">
+      <div id="slide-counter" class="text-gray-700 font-semibold dark:text-gray-300">Slide 1 / 14</div>
+      <button id="darkModeToggle" class="text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white text-xl transition-colors">
+        <i class="fa-solid fa-sun block dark:hidden"></i>
+        <i class="fa-solid fa-moon hidden dark:block"></i>
+      </button>
+    </div>
+    <button id="nextBtn" class="bg-accent-color text-white font-bold py-2 px-6 rounded-md shadow-sm hover:opacity-80 transition-opacity">
+      Next <i class="fa-solid fa-arrow-right ml-2"></i>
+    </button>
+  </footer>
+
+  <!-- Lightbox overlay -->
+  <div id="lightbox-overlay">
+    <div class="lightbox-content">
+      <button class="lightbox-close" type="button" aria-label="Close">×</button>
+      <div class="lightbox-image-wrapper relative">
+        <button class="lightbox-prev" type="button" aria-label="Previous">❮</button>
+        <img id="lightbox-image" src="https://pauluk.github.io/Bring-Your-Own-LLM-RISEN-POC-HTML-SPA/" alt="">
+        <button class="lightbox-next" type="button" aria-label="Next">❯</button>
+      </div>
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const slideCounter = document.getElementById('slide-counter');
+      const darkModeToggle = document.getElementById('darkModeToggle');
+      let currentSlide = 0;
+
+      function showSlide(index) {
+        if (index < 0 || index >= slides.length) return;
+        slides.forEach((s, i) => s.classList.toggle('active', i === index));
+        currentSlide = index;
+        slideCounter.textContent = `Slide ${currentSlide + 1} / ${slides.length}`;
+        prevBtn.disabled = currentSlide === 0;
+        nextBtn.disabled = currentSlide === slides.length - 1;
+      }
+
+      prevBtn.addEventListener('click', () => {
+        if (currentSlide > 0) showSlide(currentSlide - 1);
+      });
+      nextBtn.addEventListener('click', () => {
+        if (currentSlide < slides.length - 1) showSlide(currentSlide + 1);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') prevBtn.click();
+        if (e.key === 'ArrowRight') nextBtn.click();
+      });
+
+      darkModeToggle.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme',
+          document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+        );
+      });
+
+      // Lightbox logic
+      const images = [
+        {
+          src: "https://iili.io/f30pMRn.png",
+          caption: "Checklist Editor UI — the main builder interface."
+        },
+        {
+          src: "https://iili.io/f31Hyzu.png",
+          caption: "Generated checklist — structured items grouped into stages."
+        },
+        {
+          src: "https://iili.io/f312S5B.png",
+          caption: "Prompt generator — the RISEN-style LLM prompt template."
+        },
+        {
+          src: "https://iili.io/f31KTHQ.png",
+          caption: "Success — JSON pasted back and rendered as a checklist."
+        }
+      ];
+      const overlay = document.getElementById('lightbox-overlay');
+      const imgEl = document.getElementById('lightbox-image');
+      const captionEl = document.getElementById('lightbox-caption');
+      const btnClose = overlay.querySelector('.lightbox-close');
+      const btnPrev = overlay.querySelector('.lightbox-prev');
+      const btnNext = overlay.querySelector('.lightbox-next');
+      let currentImageIndex = 0;
+
+      function showImage(idx) {
+        if (idx < 0) idx = images.length - 1;
+        if (idx >= images.length) idx = 0;
+        currentImageIndex = idx;
+        imgEl.src = images[idx].src;
+        captionEl.textContent = images[idx].caption;
+      }
+      function openLightbox(idx) {
+        showImage(idx);
+        overlay.classList.add('active');
+      }
+      function closeLightbox() {
+        overlay.classList.remove('active');
+      }
+
+      document.body.addEventListener('click', (e) => {
+        const thumb = e.target.closest('#gallery .thumb');
+        if (thumb) {
+          const idx = parseInt(thumb.dataset.index, 10) || 0;
+          openLightbox(idx);
+        }
+      });
+
+      btnClose.addEventListener('click', closeLightbox);
+      btnPrev.addEventListener('click', () => showImage(currentImageIndex - 1));
+      btnNext.addEventListener('click', () => showImage(currentImageIndex + 1));
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeLightbox();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (!overlay.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') showImage(currentImageIndex - 1);
+        if (e.key === 'ArrowRight') showImage(currentImageIndex + 1);
+      });
+
+      // Initial render
+      showSlide(0);
+    });
+  </script>
+
+
+</body></html>
